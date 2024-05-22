@@ -1,0 +1,8 @@
+{
+    "name":"wdev/spreadsheet",
+    "autoload": {
+        "pst-4" :{
+    "App\\":"app"
+        }
+}
+}
