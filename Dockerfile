@@ -1,12 +1,13 @@
 FROM php:8.2-apache
 
-# Instala extensões do PHP para o MySQL (PDO)
-RUN docker-php-ext-install pdo pdo_mysql
+# Instala dependências do PostgreSQL e extensões do PHP
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
 
-# Copia os arquivos do projeto para o diretório web do Apache
+# Copia os arquivos do projeto para o servidor web
 COPY . /var/www/html/
 
-# Configura as permissões
+# Ajusta permissões dos arquivos
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
