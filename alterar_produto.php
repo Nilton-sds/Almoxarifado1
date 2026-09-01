@@ -1,17 +1,23 @@
 <?php
-// Oculta avisos para impedir que erros vazem para dentro dos inputs HTML
+// Oculta avisos no HTML para evitar injetar erros nos inputs
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
 ini_set('display_errors', '0');
 
 session_start();
 include_once("conexao_bd.php");
 
-// 1. Recebe o código vindo da URL (cod_item)
+// 1. Recebe o código vindo da URL (GET) ou do formulário (POST)
 $cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? $_POST['cod_item'] ?? null;
+
+// Converte para número inteiro caso venha como texto
+if (!empty($cod_item)) {
+    $cod_item = (int)$cod_item;
+}
+
 $produto = [];
 $msg_erro = "";
 
-// 2. Se o formulário for enviado (POST), faz o UPDATE no banco
+// 2. Se o formulário for enviado (POST), faz o UPDATE no PostgreSQL
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($cod_item)) {
     $nome  = $_POST['nome_produto'] ?? '';
     $preco = (float)($_POST['preco_produto'] ?? 0);
@@ -29,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($cod_item)) {
         $stmt = $conn->prepare($sql);
         $stmt->execute([$nome, $preco, $qtd, $obs, $cod_item]);
 
-        // Redireciona de volta para a lista de produtos após alterar
+        // Redireciona para a lista após salvar
         header("Location: produto.php");
         exit;
     } catch (PDOException $e) {
@@ -37,8 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($cod_item)) {
     }
 }
 
-// 3. Busca o produto exato no banco de dados pela chave 'cod_item'
-if (!empty($cod_item)) {
+// 3. Busca o produto no banco pelo cod_item
+if (!empty($cod_item) && $cod_item > 0) {
     try {
         $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ?";
         $stmt = $conn->prepare($sql);
@@ -52,7 +58,7 @@ if (!empty($cod_item)) {
     }
 }
 
-// Valores seguros mapeados exatamente para as colunas do seu banco
+// Valores seguros mapeados exatamente para o banco
 $val_codigo = $produto['cod_item'] ?? $cod_item ?? '';
 $val_nome   = $produto['nome_produto'] ?? '';
 $val_preco  = $produto['preco_produto'] ?? '0.00';
@@ -84,7 +90,8 @@ $val_obs    = $produto['obs_produto'] ?? '';
             <?php endif; ?>
 
             <?php if (!empty($produto)): ?>
-                <form action="alterar_produto.php" method="POST">
+                <!-- Mantém o cod_item na action do formulário -->
+                <form action="alterar_produto.php?cod_item=<?php echo $val_codigo; ?>" method="POST">
                     
                     <div class="form-group">
                         <label><b>Código:</b></label>
@@ -118,7 +125,7 @@ $val_obs    = $produto['obs_produto'] ?? '';
             <?php else: ?>
                 <div class="alert alert-warning text-center">
                     <strong>Nenhum produto encontrado!</strong><br>
-                    O código informado (<code><?php echo htmlspecialchars((string)$cod_item); ?></code>) não foi localizado no banco de dados.
+                    O código informado (<code><?php echo htmlspecialchars((string)$cod_item); ?></code>) não foi localizado na tabela <code>public.item_pedido</code>.
                 </div>
                 <a href="produto.php" class="btn btn-secondary btn-block">Voltar para a Lista</a>
             <?php endif; ?>
