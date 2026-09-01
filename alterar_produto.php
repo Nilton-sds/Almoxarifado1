@@ -7,7 +7,7 @@ $cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? null;
 $produto = null;
 $msg_erro = "";
 
-// 2. Se o formulário for enviado (POST), executa o UPDATE
+// 2. Se o formulário for enviado (POST), executa o UPDATE no PostgreSQL
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cod_item = $_POST['cod_item'] ?? null;
     $nome     = $_POST['nome_produto'] ?? '';
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// 3. Busca os dados atuais no banco para preencher os inputs
+// 3. Busca os dados atuais do produto para preencher os campos
 if (!empty($cod_item)) {
     try {
         $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ?";
@@ -72,7 +72,7 @@ if (!empty($cod_item)) {
             <?php endif; ?>
 
             <?php if ($produto): ?>
-                <form action="produto_alterar.php?cod_item=<?php echo htmlspecialchars($cod_item); ?>" method="POST">
+                <form action="alterar_produto.php?cod_item=<?php echo htmlspecialchars($cod_item); ?>" method="POST">
                     
                     <div class="form-group">
                         <label><b>Código:</b></label>
