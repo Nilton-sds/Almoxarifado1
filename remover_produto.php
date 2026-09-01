@@ -1,17 +1,25 @@
 <?php
+session_start();
 
-if (count($_GET) > 0) {
-    require_once('produto/Produto.php');
+// Pega o código vindo da URL (cod_item ou codigo)
+$cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? null;
 
-    // Certifique-se de que você está obtendo o código corretamente do $_GET
-    $codigo = isset($_GET['codigo']) ? $_GET['codigo'] : null;
+if ($cod_item !== null) {
+    try {
+        include_once("conexao_bd.php");
 
-    if ($codigo !== null) {
-        $produto = new Produto();
-        $resultado = $produto->remover($codigo);
+        // Executa o DELETE no PostgreSQL
+        $sql = "DELETE FROM public.item_pedido WHERE cod_item = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$cod_item]);
+
+    } catch (PDOException $e) {
+        // Se houver erro de exclusão, grava na sessão
+        $_SESSION['erro'] = "Erro ao excluir produto: " . $e->getMessage();
     }
 }
 
-header("location: produto.php");
-exit; // Certifique-se de usar exit após header para evitar qualquer saída adicional que possa causar problemas
+// Redireciona de volta para a lista de produtos
+header("Location: produto.php");
+exit;
 ?>
