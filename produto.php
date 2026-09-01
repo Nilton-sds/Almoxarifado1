@@ -1,10 +1,13 @@
-<!-- Cabeçalho com Título e Botão Gerar Planilha -->
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <h3>Produtos Cadastrados:</h3>
+<!-- Cabeçalho com Botão de Cadastro, Título e Gerar Planilha -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3>Produtos Cadastrados:</h3>
+        <a href="cadastrar_produto.php" class="btn btn-primary btn-sm mt-1">+ Cadastrar Novo Produto</a>
+    </div>
     <a href="gerar_planilha.php" class="btn btn-success">Gerar Planilha (.csv)</a>
 </div>
 
-<!-- Tabela com a estrutura da imagem -->
+<!-- Tabela ajustada com as rotas reais do projeto -->
 <div class="table-responsive">
     <table class="table align-middle">
         <thead>
@@ -37,10 +40,10 @@
                         </td>
                         <td><?php echo !empty($item['data_criacao']) ? date('d/m/Y H:i', strtotime($item['data_criacao'])) : '-'; ?></td>
                         
-                        <!-- Botões Alterar e Excluir estilizados -->
+                        <!-- Links direcionados para os arquivos do Git (produto_alterar.php e remover_produto.php) -->
                         <td class="text-right">
-                            <a href="alterar_produto.php?id=<?php echo $item['cod_item']; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
-                            <a href="excluir_produto.php?id=<?php echo $item['cod_item']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Deseja realmente excluir este item?');">Excluir</a>
+                            <a href="produto_alterar.php?cod_item=<?php echo $item['cod_item']; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
+                            <a href="remover_produto.php?cod_item=<?php echo $item['cod_item']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Deseja realmente excluir este item?');">Excluir</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
