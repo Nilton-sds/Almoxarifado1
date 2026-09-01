@@ -8,7 +8,7 @@ include_once("selecionar_produto.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produtos Cadastrados</title>
-    <!-- CSS do Bootstrap para restaurar o layout original -->
+    <!-- CSS do Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
@@ -53,7 +53,15 @@ include_once("selecionar_produto.php");
                                 <td><?php echo htmlspecialchars($item['obs_produto'] ?? ''); ?></td>
                                 <td><?php echo !empty($item['data_criacao']) ? date('d/m/Y H:i', strtotime($item['data_criacao'])) : '-'; ?></td>
                                 <td class="text-right">
-                                    <a href="alterar_produto.php?cod_item=<?php echo $id_item; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
+                                    <!-- Botão Alterar -->
+                                    <a href="alterar_produto.php?cod_item=<?php echo $id_item; ?>" class="btn btn-outline-warning btn-sm mr-1">Alterar</a>
+                                    
+                                    <!-- Botão Excluir -->
+                                    <a href="remover_produto.php?cod_item=<?php echo $id_item; ?>" 
+                                       class="btn btn-outline-danger btn-sm" 
+                                       onclick="return confirm('Tem certeza que deseja excluir o produto #<?php echo $id_item; ?>?');">
+                                       Excluir
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
