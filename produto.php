@@ -105,6 +105,23 @@ include_once("selecionar_produto.php");
             </tbody>
         </table>
 
+<!-- Botões de Ação da Tabela -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Produtos Cadastrados</h4>
+    
+    <!-- Botão de Download da Planilha -->
+    <a href="gerar_planilha.php" class="btn btn-success">
+        <i class="glyphicon glyphicon-download-alt"></i> Gerar Planilha (.xlsx/.csv)
+    </a>
+</div>
+
+<!-- Tabela de Produtos -->
+<table class="table table-striped table-bordered">
+    <!-- Restante do código da tabela... -->
+</table>
+
+
+        
     </div>
 </body>
 </html>
