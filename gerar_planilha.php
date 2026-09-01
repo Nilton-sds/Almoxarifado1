@@ -1,55 +1,35 @@
 <?php
-// Definimos o nome do arquivo que será exportado
-$arquivo = 'msgcontatos.xls';
+include_once("conexao_bd.php");
 
-// Incluímos o arquivo com a lógica para selecionar os produtos do banco de dados
-include("selecionar_produto.php");
+// Configura o cabeçalho HTTP para forçar o download em formato Excel (.csv)
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename=produtos_almoxarifado_' . date('Y-m-d') . '.csv');
 
-// Criamos uma tabela HTML com o formato da planilha
-$html = '';
-$html .= '<table border="1">';
-$html .= '<tr>';
-$html .= '<td colspan="5">Planilha de Produtos</td>';
-$html .= '</tr>';
+// Abre o ponteiro de saída do PHP
+$output = fopen('php://output', 'w');
 
-$html .= '<tr>';
-$html .= '<td><b>Codigo</b></td>';
-$html .= '<td><b>Nome do Produto</b></td>';
-$html .= '<td><b>Categoria</b></td>';
-$html .= '<td><b>Valor</b></td>';
-$html .= '<td><b>qtd_produto</b></td>';
-$html .= '<td><b>Informaçoes Adicionais</b></td>';
-$html .= '<td><b>Foto</b></td>';
-$html .= '<td><b>Data e Hora</b></td>';
-$html .= '</tr>';
+// Adiciona o BOM para garantir a acentuação correta no Excel
+fputs($output, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-// Aqui iteramos sobre os produtos obtidos do banco de dados e adicionamos as linhas na tabela
-foreach ($produto as $p) {
-    $html .= '<tr>';
-    $html .= '<td>' . $p["codigo"] . '</td>';
-    $html .= '<td>' . $p["nome_produto"] . '</td>';
-    $html .= '<td>' . $p["categoria_produto"] . '</td>';
-    $html .= '<td>' . $p["valor_produto"] . '</td>';
-    $html .= '<td>' . $p["qtd_produto"] . '</td>';
-    $html .= '<td>' . $p["info"] . '</td>';
-    $html .= '<td>' . $p["foto_produto"] . '</td>';
-    $html .= '<td>' . $p["data_hora"] . '</td>';
- 
-    $html .= '</tr>';
+// Define os nomes das colunas na primeira linha do Excel
+fputcsv($output, array('Código', 'Produto', 'Quantidade', 'Preço (R$)', 'Observação'), ';');
+
+try {
+    // Busca os produtos no PostgreSQL
+    $stmt = $conn->prepare("SELECT cod_item, nome_produto, qtd_produto, preco_produto, obs_produto FROM public.item_pedido ORDER BY cod_item DESC");
+    $stmt->execute();
+    $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Escreve cada linha de produto no arquivo
+    foreach ($produtos as $linha) {
+        // Formata o preço para o padrão brasileiro
+        $linha['preco_produto'] = number_format($linha['preco_produto'], 2, ',', '.');
+        fputcsv($output, $linha, ';');
+    }
+} catch (PDOException $e) {
+    echo "Erro ao gerar planilha: " . $e->getMessage();
 }
 
-$html .= '</table>';
-
-// Configurações header para forçar o download
-header("Expires: Mon, 07 Jul 2016 05:00:00 GMT");
-header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
-header("Cache-Control: no-cache, must-revalidate");
-header("Pragma: no-cache");
-header("Content-type: application/x-msexcel");
-header("Content-Disposition: attachment; filename=\"{$arquivo}\"");
-header("Content-Description: PHP Generated Data");
-
-// Envia o conteúdo do arquivo
-echo $html;
+fclose($output);
 exit;
 ?>
