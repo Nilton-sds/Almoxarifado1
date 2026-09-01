@@ -62,7 +62,7 @@ include_once("selecionar_produto.php");
                                 <!-- Botões Alterar e Excluir -->
                                 <td class="text-right">
                                     <a href="produto_alterar.php?cod_item=<?php echo $item['cod_item'] ?? $item['cod_produto']; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
-                                    <a href="remover_produto.php?cod_item=<?php echo $item['cod_item'] ?? $item['cod_produto']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Deseja realmente excluir este produto?');">Excluir</a>
+                                   <a href="alterar_produto.php?cod_item=<?php echo $item['cod_item'] ?? $item['cod_produto']; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
