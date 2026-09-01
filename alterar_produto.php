@@ -2,48 +2,60 @@
 session_start();
 include_once("conexao_bd.php");
 
-// 1. Pega o parâmetro recebido via URL
-$cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? null;
+// 1. Captura o código enviado por GET ou POST
+$codigo = $_GET['cod_item'] ?? $_GET['cod_produto'] ?? $_GET['id'] ?? $_POST['cod_item'] ?? null;
 $produto = null;
 $msg_erro = "";
 
-// 2. Se o formulário for enviado (POST), executa o UPDATE no banco
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $cod_item = $_POST['cod_item'] ?? null;
-    $nome     = $_POST['nome_produto'] ?? '';
-    $qtd      = (int)($_POST['qtd_produto'] ?? 1);
-    $obs      = $_POST['obs_produto'] ?? '';
-    $preco    = (float)($_POST['preco_produto'] ?? 0);
+// 2. Se o formulário for enviado (POST), realiza o UPDATE
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($codigo)) {
+    $nome  = $_POST['nome_produto'] ?? '';
+    $qtd   = (int)($_POST['qtd_produto'] ?? 1);
+    $obs   = $_POST['obs_produto'] ?? '';
+    $preco = (float)($_POST['preco_produto'] ?? 0);
 
-    if (!empty($cod_item)) {
-        try {
-            $sql = "UPDATE public.item_pedido 
-                    SET nome_produto = ?, 
-                        qtd_produto = ?, 
-                        obs_produto = ?, 
-                        preco_produto = ? 
-                    WHERE cod_item = ?";
-            
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$nome, $qtd, $obs, $preco, $cod_item]);
+    try {
+        $sql = "UPDATE public.item_pedido 
+                SET nome_produto = ?, 
+                    qtd_produto = ?, 
+                    obs_produto = ?, 
+                    preco_produto = ? 
+                WHERE cod_item = ?";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$nome, $qtd, $obs, $preco, $codigo]);
 
-            header("Location: produto.php");
-            exit;
-        } catch (PDOException $e) {
-            $msg_erro = "Erro ao atualizar produto: " . $e->getMessage();
-        }
+        header("Location: produto.php");
+        exit;
+    } catch (PDOException $e) {
+        $msg_erro = "Erro ao atualizar produto: " . $e->getMessage();
     }
 }
 
-// 3. Busca os dados atuais no banco PostgreSQL
-if (!empty($cod_item)) {
+// 3. Busca os dados atuais no banco tentando múltiplos nomes de coluna
+if (!empty($codigo)) {
     try {
-        $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ?";
+        // Tenta buscar por 'cod_item' ou 'cod_produto'
+        $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ? OR cod_produto = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$cod_item]);
+        $stmt->execute([$codigo, $codigo]);
         $produto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Se não encontrar por parâmetro numérico simples, busca todos e filtra
+        if (!$produto) {
+            $sql = "SELECT * FROM public.item_pedido";
+            $stmt = $conn->query($sql);
+            $todos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($todos as $row) {
+                $row_id = $row['cod_item'] ?? $row['cod_produto'] ?? $row['id'] ?? null;
+                if ($row_id == $codigo) {
+                    $produto = $row;
+                    break;
+                }
+            }
+        }
     } catch (PDOException $e) {
-        $msg_erro = "Erro ao buscar produto: " . $e->getMessage();
+        $msg_erro = "Erro de conexão/consulta: " . $e->getMessage();
     }
 }
 ?>
@@ -72,22 +84,17 @@ if (!empty($cod_item)) {
             <?php endif; ?>
 
             <?php if ($produto): ?>
-                <form action="alterar_produto.php?cod_item=<?php echo htmlspecialchars($cod_item); ?>" method="POST" enctype="multipart/form-data">
+                <form action="alterar_produto.php" method="POST">
                     
                     <div class="form-group">
                         <label><b>Código:</b></label>
-                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($produto['cod_item'] ?? ''); ?>" readonly>
-                        <input type="hidden" name="cod_item" value="<?php echo htmlspecialchars($produto['cod_item'] ?? ''); ?>">
+                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($produto['cod_item'] ?? $produto['cod_produto'] ?? $codigo); ?>" readonly>
+                        <input type="hidden" name="cod_item" value="<?php echo htmlspecialchars($produto['cod_item'] ?? $produto['cod_produto'] ?? $codigo); ?>">
                     </div>
 
                     <div class="form-group">
-                        <label><b>Produtos:</b></label>
+                        <label><b>Produtos (Nome):</b></label>
                         <input type="text" name="nome_produto" class="form-control" value="<?php echo htmlspecialchars($produto['nome_produto'] ?? ''); ?>" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label><b>Categoria:</b></label>
-                        <input type="text" name="categoria" class="form-control" value="<?php echo htmlspecialchars($produto['categoria'] ?? 'Geral'); ?>">
                     </div>
 
                     <div class="form-row">
@@ -102,15 +109,16 @@ if (!empty($cod_item)) {
                     </div>
 
                     <div class="form-group">
-                        <label><b>Foto:</b></label>
-                        <input type="file" name="foto" class="form-control-file border p-1 rounded">
+                        <label><b>Info Adicional (Observação):</b></label>
+                        <textarea name="obs_produto" class="form-control" rows="2"><?php echo htmlspecialchars($produto['obs_produto'] ?? ''); ?></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary font-weight-bold btn-block mt-4">ALTERAR PRODUTO</button>
                 </form>
             <?php else: ?>
                 <div class="alert alert-warning text-center">
-                    Produto não encontrado ou nenhum código válido informado na URL.
+                    <strong>Nenhum dado encontrado!</strong><br>
+                    O código informado na URL foi: <code><?php echo htmlspecialchars($codigo ?? 'Nenhum código passado'); ?></code>
                 </div>
                 <a href="produto.php" class="btn btn-secondary btn-block">Voltar para a Lista</a>
             <?php endif; ?>
