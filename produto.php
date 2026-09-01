@@ -14,10 +14,14 @@ include_once("selecionar_produto.php");
 <body>
     <div class="container mt-4 mb-5">
 
-        <!-- Botões de Ação Superiores -->
+        <!-- Botões de Ação Superiores (Incluindo Sair/Login) -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="cadastrar_produto.php" class="btn btn-primary">+ Cadastrar Novo Produto</a>
-            <a href="gerar_planilha.php" class="btn btn-success">Gerar Planilha (.csv)</a>
+            <div>
+                <a href="cadastrar_produto.php" class="btn btn-primary">+ Cadastrar Novo Produto</a>
+                <a href="gerar_planilha.php" class="btn btn-success ml-2">Gerar Planilha (.csv)</a>
+            </div>
+            <!-- Botão para sair e voltar à tela inicial de login -->
+            <a href="index.php" class="btn btn-outline-danger">Sair / Login</a>
         </div>
 
         <h3 class="mb-3">Produtos Cadastrados:</h3>
@@ -55,7 +59,7 @@ include_once("selecionar_produto.php");
                                 </td>
                                 <td><?php echo !empty($item['data_criacao']) ? date('d/m/Y H:i', strtotime($item['data_criacao'])) : '-'; ?></td>
                                 
-                                <!-- Botões Alterar e Excluir conectados ao Git -->
+                                <!-- Botões Alterar e Excluir -->
                                 <td class="text-right">
                                     <a href="produto_alterar.php?cod_item=<?php echo $item['cod_item'] ?? $item['cod_produto']; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
                                     <a href="remover_produto.php?cod_item=<?php echo $item['cod_item'] ?? $item['cod_produto']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Deseja realmente excluir este produto?');">Excluir</a>
