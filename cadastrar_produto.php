@@ -4,6 +4,7 @@ session_start();
 $msg = "";
 $style = "";
 
+// Processa o formulário quando for enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
 
     $nome  = $_POST["nome_produto"] ?? '';
@@ -14,20 +15,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
     try {
         include_once("conexao_bd.php");
 
-        // SQL compatível com a estrutura padrão da tabela item_pedido
+        // SQL corrigido sem a coluna 'categoria' que não existe no banco
         $sql = "INSERT INTO public.item_pedido (nome_produto, qtd_produto, obs_produto, preco_produto) 
                 VALUES (?, ?, ?, ?)";
         
         $stmt = $conn->prepare($sql);
         $stmt->execute([$nome, $qtd, $obs, $preco]);
 
-        // Redireciona para a lista ao cadastrar com sucesso
+        // Redireciona para a lista após cadastrar com sucesso
         header("Location: produto.php");
         exit;
 
     } catch (PDOException $e) {
-        // Exibe o erro real retornado pelo PostgreSQL
-        $msg = "Erro no Banco de Dados: " . $e->getMessage();
+        $msg = "Erro ao salvar no banco: " . $e->getMessage();
         $style = "alert-danger";
     }
 }
@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
 
                 <div class="form-group">
                     <label><b>Info Adicional (Observação)</b></label>
-                    <textarea name="obs_produto" class="form-control" rows="3" placeholder="Observações do item"></textarea>
+                    <textarea name="obs_produto" class="form-control" rows="3" placeholder="Ex: Caixa com 100 unidades"></textarea>
                 </div>
 
                 <div class="d-flex justify-content-between mt-4">
