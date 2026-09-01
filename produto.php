@@ -76,9 +76,18 @@ include_once("selecionar_produto.php");
             </div>
         </div>
 
+        <!-- Cabeçalho da Tabela com Botão Gerar Planilha -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Produtos Cadastrados</h4>
+            
+            <!-- Botão de Download da Planilha -->
+            <a href="gerar_planilha.php" class="btn btn-success">
+                Gerar Planilha (.csv)
+            </a>
+        </div>
+
         <!-- Tabela de Exibição dos Produtos -->
-        <h4>Produtos Cadastrados</h4>
-        <table class="table table-striped table-bordered mt-3">
+        <table class="table table-striped table-bordered">
             <thead class="thead-dark">
                 <tr>
                     <th>Produto</th>
@@ -105,23 +114,6 @@ include_once("selecionar_produto.php");
             </tbody>
         </table>
 
-<!-- Botões de Ação da Tabela -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Produtos Cadastrados</h4>
-    
-    <!-- Botão de Download da Planilha -->
-    <a href="gerar_planilha.php" class="btn btn-success">
-        <i class="glyphicon glyphicon-download-alt"></i> Gerar Planilha (.xlsx/.csv)
-    </a>
-</div>
-
-<!-- Tabela de Produtos -->
-<table class="table table-striped table-bordered">
-    <!-- Restante do código da tabela... -->
-</table>
-
-
-        
     </div>
 </body>
 </html>
