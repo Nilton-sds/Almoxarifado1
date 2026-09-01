@@ -4,7 +4,7 @@ session_start();
 $msg = "";
 $style = "";
 
-// Quando o formulário for enviado (botão Salvar)
+// Quando enviar o formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
 
     $nome  = $_POST["nome_produto"] ?? '';
@@ -17,19 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
     try {
         include_once("conexao_bd.php");
 
-        // Insere o produto no banco PostgreSQL
+        // SQL para salvar no PostgreSQL
         $sql = "INSERT INTO public.item_pedido (cod_usuario, nome_produto, qtd_produto, obs_produto, preco_produto, categoria) 
                 VALUES (?, ?, ?, ?, ?, ?)";
         
         $stmt = $conn->prepare($sql);
         $stmt->execute([$cod_usuario, $nome, $qtd, $obs, $preco, $categoria]);
 
-        // Após salvar com sucesso, volta para a lista de produtos
+        // Sucesso: redireciona para a lista
         header("Location: produto.php");
         exit;
 
     } catch (PDOException $e) {
-        $msg = "Erro ao cadastrar produto: " . $e->getMessage();
+        $msg = "Erro ao salvar no banco: " . $e->getMessage();
         $style = "alert-danger";
     }
 }
@@ -45,49 +45,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && count($_POST) > 0) {
 <body class="bg-light">
 
 <div class="container mt-5" style="max-width: 600px;">
-    <div class="card shadow">
+    <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Cadastrar Novo Produto</h4>
-            <a href="produto.php" class="btn btn-sm btn-light">Voltar à Lista</a>
+            <h5 class="mb-0">Cadastrar Novo Produto</h5>
+            <a href="produto.php" class="btn btn-sm btn-light">Voltar</a>
         </div>
         <div class="card-body">
 
             <?php if (!empty($msg)): ?>
-                <div class="alert <?php echo $style; ?>" role="alert">
-                    <?php echo htmlspecialchars($msg); ?>
-                </div>
+                <div class="alert <?php echo $style; ?>"><?php echo htmlspecialchars($msg); ?></div>
             <?php endif; ?>
 
-            <form action="" method="POST">
+            <form action="cadastrar_produto.php" method="POST">
                 <div class="form-group">
-                    <label for="nome_produto"><b>Nome do Produto *</b></label>
-                    <input type="text" name="nome_produto" id="nome_produto" class="form-control" placeholder="Ex: Caneta Azul" required>
+                    <label><b>Nome do Produto *</b></label>
+                    <input type="text" name="nome_produto" class="form-control" required placeholder="Ex: Teclado USB">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label for="preco_produto"><b>Preço (R$) *</b></label>
-                        <input type="number" step="0.01" name="preco_produto" id="preco_produto" class="form-control" placeholder="0.00" required>
+                        <label><b>Preço (R$) *</b></label>
+                        <input type="number" step="0.01" name="preco_produto" class="form-control" required placeholder="0.00">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="qtd_produto"><b>Quantidade *</b></label>
-                        <input type="number" name="qtd_produto" id="qtd_produto" class="form-control" value="1" min="1" required>
+                        <label><b>Quantidade *</b></label>
+                        <input type="number" name="qtd_produto" class="form-control" value="1" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoria"><b>Categoria</b></label>
-                    <input type="text" name="categoria" id="categoria" class="form-control" placeholder="Ex: Material de Escritório" value="Geral">
+                    <label><b>Categoria</b></label>
+                    <input type="text" name="categoria" class="form-control" value="Geral">
                 </div>
 
                 <div class="form-group">
-                    <label for="obs_produto"><b>Informações Adicionais (Observação)</b></label>
-                    <textarea name="obs_produto" id="obs_produto" class="form-control" rows="3" placeholder="Ex: Caixa com 100 unidades"></textarea>
+                    <label><b>Info Adicional (Observação)</b></label>
+                    <textarea name="obs_produto" class="form-control" rows="3"></textarea>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="d-flex justify-content-between mt-4">
                     <a href="produto.php" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-success font-weight-bold">Salvar Produto</button>
+                    <button type="submit" class="btn btn-success">Salvar Produto</button>
                 </div>
             </form>
 
