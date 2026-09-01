@@ -1,46 +1,16 @@
 <?php
+// Garanta que a conexão com o banco seja incluída antes de usar $conn
+include_once("conexao_bd.php");
 
-$where_cod = "";
-if (isset($_GET["codigo"])){
-  $where_cod = "AND codigo = " .$_GET["codigo"];
+try {
+    // Linha 19 original (onde ocorria o erro)
+    $stmt = $conn->prepare("SELECT * FROM item_pedido");
+    $stmt->execute();
+    $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Seu código de listagem continua aqui...
+
+} catch (PDOException $e) {
+    echo "Erro ao buscar produtos: " . $e->getMessage();
 }
-
-
-
-
-try{
-
-    include("conexao_bd.php");
- 
-    
- 
-// pegar os produtos armazenado no bd:
-
-$consulta = $conn->prepare("SELECT * FROM produto WHERE situacao = 'HABILITADO' " .$where_cod);
-$consulta->execute();
-
- $consulta->execute();
-
- 
- $produto =$consulta->fetchAll();
-
- } 
- 
- catch(PDOException $e) {
-   echo "Inserção no banco de daso falhou:". $e->getMessage();;
-   $resultado["msg"]="item não inserido";
-   $resultado["cod"] = 0;
-   $resultado["style"] = "alert-danger";
- }
- 
-
- $conn = null;
-
-
- 
- 
-
-
- 
 ?>
-
