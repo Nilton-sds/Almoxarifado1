@@ -8,12 +8,13 @@ include_once("selecionar_produto.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produtos Cadastrados</title>
+    <!-- CSS do Bootstrap para restaurar o layout original -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
     <div class="container mt-4 mb-5">
 
-        <!-- Navegação / Cadastro Inicial -->
+        <!-- Botões Superiores -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <a href="cadastrar_produto.php" class="btn btn-primary">+ Cadastrar Novo Produto</a>
@@ -24,6 +25,7 @@ include_once("selecionar_produto.php");
 
         <h3 class="mb-3">Produtos Cadastrados:</h3>
 
+        <!-- Tabela Estilizada -->
         <div class="table-responsive">
             <table class="table table-hover border bg-white">
                 <thead class="thead-light">
@@ -50,7 +52,6 @@ include_once("selecionar_produto.php");
                                 <td>R$ <?php echo number_format($item['preco_produto'] ?? 0, 2, ',', '.'); ?></td>
                                 <td><?php echo htmlspecialchars($item['obs_produto'] ?? ''); ?></td>
                                 <td><?php echo !empty($item['data_criacao']) ? date('d/m/Y H:i', strtotime($item['data_criacao'])) : '-'; ?></td>
-                                
                                 <td class="text-right">
                                     <a href="alterar_produto.php?cod_item=<?php echo $id_item; ?>" class="btn btn-outline-warning btn-sm">Alterar</a>
                                 </td>
