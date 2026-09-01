@@ -12,7 +12,7 @@ include_once("selecionar_produto.php");
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
-    <div class="container mt-4 mb-5">
+    <div class="container-fluid px-4 mt-4 mb-5">
 
         <!-- Botões Superiores -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -27,7 +27,7 @@ include_once("selecionar_produto.php");
 
         <!-- Tabela Estilizada -->
         <div class="table-responsive">
-            <table class="table table-hover border bg-white">
+            <table class="table table-hover border bg-white align-middle">
                 <thead class="thead-light">
                     <tr>
                         <th>Código</th>
@@ -36,7 +36,7 @@ include_once("selecionar_produto.php");
                         <th>Valor Unitário</th>
                         <th>Info Adicional</th>
                         <th>Data Hora</th>
-                        <th class="text-right">Ações</th>
+                        <th class="text-center" style="min-width: 170px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,14 +52,13 @@ include_once("selecionar_produto.php");
                                 <td>R$ <?php echo number_format($item['preco_produto'] ?? 0, 2, ',', '.'); ?></td>
                                 <td><?php echo htmlspecialchars($item['obs_produto'] ?? ''); ?></td>
                                 <td><?php echo !empty($item['data_criacao']) ? date('d/m/Y H:i', strtotime($item['data_criacao'])) : '-'; ?></td>
-                                <td class="text-right">
-                                    <!-- Botão Alterar -->
+                                
+                                <!-- Coluna Ações com botões lado a lado -->
+                                <td class="text-center text-nowrap">
                                     <a href="alterar_produto.php?cod_item=<?php echo $id_item; ?>" class="btn btn-outline-warning btn-sm mr-1">Alterar</a>
-                                    
-                                    <!-- Botão Excluir -->
                                     <a href="remover_produto.php?cod_item=<?php echo $id_item; ?>" 
                                        class="btn btn-outline-danger btn-sm" 
-                                       onclick="return confirm('Tem certeza que deseja excluir o produto #<?php echo $id_item; ?>?');">
+                                       onclick="return confirm('Deseja realmente excluir o produto #<?php echo $id_item; ?>?');">
                                        Excluir
                                     </a>
                                 </td>
