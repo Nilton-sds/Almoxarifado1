@@ -7,7 +7,7 @@ $cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? null;
 $produto = null;
 $msg_erro = "";
 
-// 2. Se o formulário for enviado (POST), executa o UPDATE no PostgreSQL
+// 2. Se o formulário for enviado (POST), executa o UPDATE no banco
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cod_item = $_POST['cod_item'] ?? null;
     $nome     = $_POST['nome_produto'] ?? '';
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// 3. Busca os dados atuais do produto para preencher os campos
+// 3. Busca os dados atuais no banco PostgreSQL
 if (!empty($cod_item)) {
     try {
         $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ?";
@@ -57,7 +57,7 @@ if (!empty($cod_item)) {
 </head>
 <body class="bg-light">
 
-<div class="container mt-5" style="max-width: 600px;">
+<div class="container mt-5 mb-5" style="max-width: 600px;">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Alterar Produto</h5>
@@ -72,7 +72,7 @@ if (!empty($cod_item)) {
             <?php endif; ?>
 
             <?php if ($produto): ?>
-                <form action="alterar_produto.php?cod_item=<?php echo htmlspecialchars($cod_item); ?>" method="POST">
+                <form action="alterar_produto.php?cod_item=<?php echo htmlspecialchars($cod_item); ?>" method="POST" enctype="multipart/form-data">
                     
                     <div class="form-group">
                         <label><b>Código:</b></label>
@@ -83,6 +83,11 @@ if (!empty($cod_item)) {
                     <div class="form-group">
                         <label><b>Produtos:</b></label>
                         <input type="text" name="nome_produto" class="form-control" value="<?php echo htmlspecialchars($produto['nome_produto'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><b>Categoria:</b></label>
+                        <input type="text" name="categoria" class="form-control" value="<?php echo htmlspecialchars($produto['categoria'] ?? 'Geral'); ?>">
                     </div>
 
                     <div class="form-row">
@@ -97,15 +102,15 @@ if (!empty($cod_item)) {
                     </div>
 
                     <div class="form-group">
-                        <label><b>Info Adicional (Observação):</b></label>
-                        <textarea name="obs_produto" class="form-control" rows="2"><?php echo htmlspecialchars($produto['obs_produto'] ?? ''); ?></textarea>
+                        <label><b>Foto:</b></label>
+                        <input type="file" name="foto" class="form-control-file border p-1 rounded">
                     </div>
 
                     <button type="submit" class="btn btn-primary font-weight-bold btn-block mt-4">ALTERAR PRODUTO</button>
                 </form>
             <?php else: ?>
                 <div class="alert alert-warning text-center">
-                    Produto não encontrado ou nenhum código informado na URL.
+                    Produto não encontrado ou nenhum código válido informado na URL.
                 </div>
                 <a href="produto.php" class="btn btn-secondary btn-block">Voltar para a Lista</a>
             <?php endif; ?>
