@@ -1,30 +1,35 @@
 <?php
+// Oculta avisos para impedir que erros vazem para dentro dos inputs HTML
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
+ini_set('display_errors', '0');
+
 session_start();
 include_once("conexao_bd.php");
 
-// 1. Captura o código enviado por GET ou POST
-$codigo = $_GET['cod_item'] ?? $_GET['cod_produto'] ?? $_GET['id'] ?? $_POST['cod_item'] ?? null;
-$produto = null;
+// 1. Recebe o código vindo da URL (cod_item)
+$cod_item = $_GET['cod_item'] ?? $_GET['codigo'] ?? $_POST['cod_item'] ?? null;
+$produto = [];
 $msg_erro = "";
 
-// 2. Se o formulário for enviado (POST), realiza o UPDATE
-if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($codigo)) {
+// 2. Se o formulário for enviado (POST), faz o UPDATE no banco
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($cod_item)) {
     $nome  = $_POST['nome_produto'] ?? '';
+    $preco = (float)($_POST['preco_produto'] ?? 0);
     $qtd   = (int)($_POST['qtd_produto'] ?? 1);
     $obs   = $_POST['obs_produto'] ?? '';
-    $preco = (float)($_POST['preco_produto'] ?? 0);
 
     try {
         $sql = "UPDATE public.item_pedido 
                 SET nome_produto = ?, 
+                    preco_produto = ?, 
                     qtd_produto = ?, 
-                    obs_produto = ?, 
-                    preco_produto = ? 
+                    obs_produto = ? 
                 WHERE cod_item = ?";
         
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$nome, $qtd, $obs, $preco, $codigo]);
+        $stmt->execute([$nome, $preco, $qtd, $obs, $cod_item]);
 
+        // Redireciona de volta para a lista de produtos após alterar
         header("Location: produto.php");
         exit;
     } catch (PDOException $e) {
@@ -32,32 +37,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($codigo)) {
     }
 }
 
-// 3. Busca os dados atuais no banco tentando múltiplos nomes de coluna
-if (!empty($codigo)) {
+// 3. Busca o produto exato no banco de dados pela chave 'cod_item'
+if (!empty($cod_item)) {
     try {
-        // Tenta buscar por 'cod_item' ou 'cod_produto'
-        $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ? OR cod_produto = ?";
+        $sql = "SELECT * FROM public.item_pedido WHERE cod_item = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$codigo, $codigo]);
-        $produto = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Se não encontrar por parâmetro numérico simples, busca todos e filtra
-        if (!$produto) {
-            $sql = "SELECT * FROM public.item_pedido";
-            $stmt = $conn->query($sql);
-            $todos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($todos as $row) {
-                $row_id = $row['cod_item'] ?? $row['cod_produto'] ?? $row['id'] ?? null;
-                if ($row_id == $codigo) {
-                    $produto = $row;
-                    break;
-                }
-            }
+        $stmt->execute([$cod_item]);
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($res) {
+            $produto = $res;
         }
     } catch (PDOException $e) {
-        $msg_erro = "Erro de conexão/consulta: " . $e->getMessage();
+        $msg_erro = "Erro ao buscar produto: " . $e->getMessage();
     }
 }
+
+// Valores seguros mapeados exatamente para as colunas do seu banco
+$val_codigo = $produto['cod_item'] ?? $cod_item ?? '';
+$val_nome   = $produto['nome_produto'] ?? '';
+$val_preco  = $produto['preco_produto'] ?? '0.00';
+$val_qtd    = $produto['qtd_produto'] ?? '1';
+$val_obs    = $produto['obs_produto'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -83,42 +83,42 @@ if (!empty($codigo)) {
                 </div>
             <?php endif; ?>
 
-            <?php if ($produto): ?>
+            <?php if (!empty($produto)): ?>
                 <form action="alterar_produto.php" method="POST">
                     
                     <div class="form-group">
                         <label><b>Código:</b></label>
-                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($produto['cod_item'] ?? $produto['cod_produto'] ?? $codigo); ?>" readonly>
-                        <input type="hidden" name="cod_item" value="<?php echo htmlspecialchars($produto['cod_item'] ?? $produto['cod_produto'] ?? $codigo); ?>">
+                        <input type="text" class="form-control" value="<?php echo htmlspecialchars((string)$val_codigo); ?>" readonly>
+                        <input type="hidden" name="cod_item" value="<?php echo htmlspecialchars((string)$val_codigo); ?>">
                     </div>
 
                     <div class="form-group">
                         <label><b>Produtos (Nome):</b></label>
-                        <input type="text" name="nome_produto" class="form-control" value="<?php echo htmlspecialchars($produto['nome_produto'] ?? ''); ?>" required>
+                        <input type="text" name="nome_produto" class="form-control" value="<?php echo htmlspecialchars((string)$val_nome); ?>" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label><b>Valor Unitário R$:</b></label>
-                            <input type="number" step="0.01" name="preco_produto" class="form-control" value="<?php echo htmlspecialchars($produto['preco_produto'] ?? '0.00'); ?>" required>
+                            <input type="number" step="0.01" name="preco_produto" class="form-control" value="<?php echo htmlspecialchars((string)$val_preco); ?>" required>
                         </div>
                         <div class="form-group col-md-6">
                             <label><b>Quantidade:</b></label>
-                            <input type="number" name="qtd_produto" class="form-control" value="<?php echo htmlspecialchars($produto['qtd_produto'] ?? '1'); ?>" required>
+                            <input type="number" name="qtd_produto" class="form-control" value="<?php echo htmlspecialchars((string)$val_qtd); ?>" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label><b>Info Adicional (Observação):</b></label>
-                        <textarea name="obs_produto" class="form-control" rows="2"><?php echo htmlspecialchars($produto['obs_produto'] ?? ''); ?></textarea>
+                        <textarea name="obs_produto" class="form-control" rows="3"><?php echo htmlspecialchars((string)$val_obs); ?></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary font-weight-bold btn-block mt-4">ALTERAR PRODUTO</button>
                 </form>
             <?php else: ?>
                 <div class="alert alert-warning text-center">
-                    <strong>Nenhum dado encontrado!</strong><br>
-                    O código informado na URL foi: <code><?php echo htmlspecialchars($codigo ?? 'Nenhum código passado'); ?></code>
+                    <strong>Nenhum produto encontrado!</strong><br>
+                    O código informado (<code><?php echo htmlspecialchars((string)$cod_item); ?></code>) não foi localizado no banco de dados.
                 </div>
                 <a href="produto.php" class="btn btn-secondary btn-block">Voltar para a Lista</a>
             <?php endif; ?>
